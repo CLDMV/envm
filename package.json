@@ -1,0 +1,51 @@
+{
+	"name": "@cldmv/envm",
+	"version": "1.0.2",
+	"description": "Cross-platform environment variable manager for Node.js (ESM, no classes)",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"exports": {
+		".": "./dist/index.mjs",
+		"./cli": "./dist/cli.mjs"
+	},
+	"bin": {
+		"envm": "dist/cli.mjs"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"clean": "rmdir /s /q dist || exit 0",
+		"build": "npm run clean && esbuild src/*.mjs --minify --platform=node --format=esm --outdir=dist && esbuild src/platform/*.mjs --minify --platform=node --format=esm --outdir=dist/platform && npm run rename-dist-js-to-mjs",
+		"rename-dist-js-to-mjs": "for %f in (dist\\*.js) do ren %f %~nf.mjs && for %f in (dist\\platform\\*.js) do ren %f %~nf.mjs",
+		"prepublishOnly": "npm run build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CLDMV/envm.git"
+	},
+	"bugs": {
+		"url": "https://github.com/CLDMV/envm/issues"
+	},
+	"homepage": "https://github.com/CLDMV/envm#readme",
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist/",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"env",
+		"environment",
+		"variables",
+		"cross-platform",
+		"nodejs",
+		"esm"
+	],
+	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
+	"license": "Apache-2.0",
+	"devDependencies": {
+		"vitest": "^1.0.0",
+		"esbuild": "^0.19.0"
+	}
+}
