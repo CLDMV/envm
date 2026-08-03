@@ -43,7 +43,9 @@ describe("envManager API", () => {
 		const arr = split(`a${delim}b${delim}A`, delim);
 		expect(arr.length).toBe(3);
 		expect(join(arr, delim)).toMatch(/^a/);
-		expect(unique(arr, isWin).length).toBe(2);
+		// unique() dedups case-insensitively only when told to (Windows PATH semantics).
+		// On posix "a" and "A" are distinct segments, so 3 remain; on Windows they collapse to 2.
+		expect(unique(arr, isWin).length).toBe(isWin ? 2 : 3);
 		expect(validate(["good", "ok"])).toBe(true);
 		expect(validate(["bad\0"])).toBe(false);
 		expect(validate(['"bad'])).toBe(false);

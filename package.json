@@ -12,10 +12,13 @@
 		"envm": "dist/cli.mjs"
 	},
 	"scripts": {
-		"test": "vitest run",
-		"clean": "rmdir /s /q dist || exit 0",
-		"build": "npm run clean && esbuild src/*.mjs --minify --platform=node --format=esm --outdir=dist && esbuild src/platform/*.mjs --minify --platform=node --format=esm --outdir=dist/platform && npm run rename-dist-js-to-mjs",
-		"rename-dist-js-to-mjs": "for %f in (dist\\*.js) do ren %f %~nf.mjs && for %f in (dist\\platform\\*.js) do ren %f %~nf.mjs",
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"build": "npm run clean && esbuild src/*.mjs src/platform/*.mjs --minify --platform=node --format=esm --outdir=dist --out-extension:.js=.mjs --outbase=src",
+		"build:ci": "npm run build",
+		"test": "node tests/run-vitest.mjs",
+		"test:watch": "vitest --config .configs/vitest.config.mjs",
+		"coverage": "node tests/run-vitest.mjs --coverage-quiet",
+		"ci:coverage": "npm run coverage",
 		"prepublishOnly": "npm run build"
 	},
 	"repository": {
@@ -45,7 +48,9 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"vitest": "^1.0.0",
-		"esbuild": "^0.19.0"
+		"@cldmv/vitest-runner": "^1.2.0",
+		"@vitest/coverage-v8": "^4.1.10",
+		"esbuild": "^0.19.0",
+		"vitest": "^4.1.10"
 	}
 }
