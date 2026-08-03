@@ -1,6 +1,6 @@
 {
 	"name": "@cldmv/envm",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Cross-platform environment variable manager for Node.js (ESM, no classes)",
 	"type": "module",
 	"main": "./dist/index.mjs",
