@@ -41,8 +41,8 @@ const code = await run({
 	cwd: root,
 	testDir: "tests",
 	vitestConfig: ".configs/vitest.config.mjs",
-	// envm uses the plain `*.test.mjs` convention.
-	testFilePattern: /\.test\.mjs$/,
+	// envm uses the CLDMV fleet-wide `*.test.vitest.mjs` convention.
+	testFilePattern: /\.test\.vitest\.mjs$/,
 	testPatterns,
 	workers,
 	coverageQuiet,
