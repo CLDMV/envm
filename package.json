@@ -50,7 +50,7 @@
 	"devDependencies": {
 		"@cldmv/vitest-runner": "^1.2.0",
 		"@vitest/coverage-v8": "^4.1.10",
-		"esbuild": "^0.19.0",
+		"esbuild": "^0.28.1",
 		"vitest": "^4.1.10"
 	}
 }
