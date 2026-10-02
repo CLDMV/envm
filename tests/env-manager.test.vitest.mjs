@@ -1,3 +1,18 @@
+/**
+ *
+ *	@Project: @cldmv/envm
+ *	@Filename: /tests/env-manager.test.vitest.mjs
+ *	@Date: 2026-08-02T23:37:48-07:00 (1785739068)
+ *	@Author: Nate Corcoran <CLDMV>
+ *	@Email: <Shinrai@users.noreply.github.com>
+ *	-----
+ *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
+ *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	-----
+ *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
+ *
+ */
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { envManager } from "../src/index.mjs";
 import * as win from "../src/platform/win.mjs";

@@ -19,7 +19,8 @@
 		"test:watch": "vitest --config .configs/vitest.config.mjs",
 		"coverage": "node tests/run-vitest.mjs --coverage-quiet",
 		"ci:coverage": "npm run coverage",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "npm run build",
+		"fix:headers": "fix-headers --config .configs/fix-headers.json"
 	},
 	"repository": {
 		"type": "git",
@@ -48,6 +49,8 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"devDependencies": {
+		"@cldmv/configs": "^1.2.0",
+		"@cldmv/fix-headers": "^2.1.1",
 		"@cldmv/vitest-runner": "^1.2.0",
 		"@vitest/coverage-v8": "^5.0.0",
 		"esbuild": "^0.28.1",

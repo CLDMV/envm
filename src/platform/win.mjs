@@ -1,4 +1,19 @@
 /**
+ *
+ *	@Project: @cldmv/envm
+ *	@Filename: /src/platform/win.mjs
+ *	@Date: 2025-08-11T12:29:11-07:00 (1754940551)
+ *	@Author: Nate Corcoran <CLDMV>
+ *	@Email: <Shinrai@users.noreply.github.com>
+ *	-----
+ *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
+ *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	-----
+ *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
+ *
+ */
+
+/**
  * Windows environment variable adapter for envManager.
  * Handles registry/session env read/write, expansion, backup/verify/rollback, case-insensitive keys, delimiter, path helpers.
  * @module platform/win
