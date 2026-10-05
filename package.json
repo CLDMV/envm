@@ -49,7 +49,7 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@cldmv/configs": "^1.2.0",
+		"@cldmv/configs": "^1.2.4",
 		"@cldmv/fix-headers": "^2.2.0",
 		"@cldmv/vitest-runner": "^1.2.0",
 		"@vitest/coverage-v8": "^5.0.0",
