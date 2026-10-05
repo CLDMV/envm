@@ -12,7 +12,7 @@
 
 ### Latest: v1.0.11 (October 2026)
 
-- **Header tooling on fix-headers 2.1.4** — the `@cldmv/fix-headers` dev dependency moves to 2.1.4 and the header pass was re-run; every file already matched, so nothing was restamped. No library or CLI code changed (#34).
+- **Header tooling on fix-headers 2.2.0** — the `@cldmv/fix-headers` dev dependency moves to 2.2.0 and `@cldmv/configs` to 1.2.4, so `@Last modified by` now follows content edits only. Every file already matched, so nothing was restamped, and no library or CLI code changed (#34, #40).
 - **Complete version history** — every release from v1.0.2 onward now has a changelog under [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/). v1.0.2 is the only version published to npm so far; v1.0.3 through v1.0.10 changed tooling, CI and documentation only, with no change to the library or CLI.
 - [View full v1.0.11 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md)
 
