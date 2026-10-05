@@ -1,6 +1,6 @@
 {
 	"name": "@cldmv/envm",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"description": "Cross-platform environment variable manager for Node.js (ESM, no classes)",
 	"type": "module",
 	"main": "./dist/index.mjs",
@@ -49,8 +49,8 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@cldmv/configs": "^1.2.0",
-		"@cldmv/fix-headers": "^2.1.1",
+		"@cldmv/configs": "^1.2.4",
+		"@cldmv/fix-headers": "^2.2.0",
 		"@cldmv/vitest-runner": "^1.2.0",
 		"@vitest/coverage-v8": "^5.0.0",
 		"esbuild": "^0.28.1",

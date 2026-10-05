@@ -8,6 +8,23 @@
 
 **@cldmv/envm** is a modern, cross-platform environment variable manager for Node.js projects. Designed for both developers and automation, it lets you safely read, write, and manipulate environment variables on Windows and POSIX systems—without ever touching a class. With robust backup and restore features, a powerful CLI, and a clean, ESM-first API, `envm` makes managing your environment variables simple, safe, and scriptable. Whether you're tweaking your PATH, rolling back a bad change, or automating setup across platforms, `envm` gives you the control and confidence you need.
 
+## ✨ What's New
+
+### Latest: v1.0.11 (October 2026)
+
+- **Header tooling on fix-headers 2.2.0** — the `@cldmv/fix-headers` dev dependency moves to 2.2.0 and `@cldmv/configs` to 1.2.4, so `@Last modified by` now follows content edits only. Every file already matched, so nothing was restamped, and no library or CLI code changed (#34, #40).
+- **Complete version history** — every release from v1.0.2 onward now has a changelog under [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/). v1.0.2 is the only version published to npm so far; v1.0.3 through v1.0.10 changed tooling, CI and documentation only, with no change to the library or CLI.
+- [View full v1.0.11 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md)
+
+### Recent Releases
+
+- **v1.0.10** (October 2026) — the CI `✅ Required PR Check` mirror job runs on every path instead of being skipped on in-repo PRs (#32) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.10.md))
+- **v1.0.9** (October 2026) — a skipped PR run no longer satisfies the `✅ Required PR Check` ruleset (#30) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.9.md))
+- **v1.0.8** (October 2026) — uniform file headers from the shared CLDMV config, the verbatim Apache-2.0 license text, a v4.29.2 workflow sync and vitest 5.0.2 (#19, #20, #22, #23, #24, #26, #27, #28) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.8.md))
+- **v1.0.7** (September 2026) — vitest 5, signed redirected security PRs and grouped Dependabot updates (#18) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.7.md))
+
+📚 **For complete version history, see [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/) and the [GitHub Releases](https://github.com/CLDMV/envm/releases).**
+
 ## Features
 
 - **Cross-platform:** Works on Windows (registry) and POSIX (dotfiles, /etc/environment)
