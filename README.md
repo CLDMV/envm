@@ -10,18 +10,18 @@
 
 ## ✨ What's New
 
-### Latest: v1.0.11 (October 2026)
+### Latest: v1.0.12 (October 2026)
 
-- **Header tooling on fix-headers 2.2.0** — the `@cldmv/fix-headers` dev dependency moves to 2.2.0 and `@cldmv/configs` to 1.2.4, so `@Last modified by` now follows content edits only. Every file already matched, so nothing was restamped, and no library or CLI code changed (#34, #40).
-- **Complete version history** — every release from v1.0.2 onward now has a changelog under [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/). v1.0.2 is the only version published to npm so far; v1.0.3 through v1.0.10 changed tooling, CI and documentation only, with no change to the library or CLI.
-- [View full v1.0.11 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md)
+- **Test toolchain refresh** — `@cldmv/vitest-runner` 1.2.0 to 1.5.3, `vitest` and `@vitest/coverage-v8` 5.0.3, all dev-only and lockfile-only; no library or CLI code changed (#42, #43, #44).
+- **Local test runs need Node.js 22.12.0 or later** — the runner's own Node.js floor rises from 20.19 to 22.12, which CI already used.
+- [View full v1.0.12 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.12.md)
 
 ### Recent Releases
 
+- **v1.0.11** (October 2026) — `@cldmv/fix-headers` 2.2.0 and `@cldmv/configs` 1.2.4; every header already matched, so nothing was restamped (#34, #40) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md))
 - **v1.0.10** (October 2026) — the CI `✅ Required PR Check` mirror job runs on every path instead of being skipped on in-repo PRs (#32) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.10.md))
 - **v1.0.9** (October 2026) — a skipped PR run no longer satisfies the `✅ Required PR Check` ruleset (#30) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.9.md))
 - **v1.0.8** (October 2026) — uniform file headers from the shared CLDMV config, the verbatim Apache-2.0 license text, a v4.29.2 workflow sync and vitest 5.0.2 (#19, #20, #22, #23, #24, #26, #27, #28) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.8.md))
-- **v1.0.7** (September 2026) — vitest 5, signed redirected security PRs and grouped Dependabot updates (#18) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.7.md))
 
 📚 **For complete version history, see [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/) and the [GitHub Releases](https://github.com/CLDMV/envm/releases).**
 
