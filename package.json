@@ -3,23 +3,47 @@
 	"version": "1.0.12",
 	"description": "Cross-platform environment variable manager for Node.js (ESM, no classes)",
 	"type": "module",
-	"main": "./dist/index.mjs",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./types/src/index.d.mts",
 	"exports": {
-		".": "./dist/index.mjs",
-		"./cli": "./dist/cli.mjs"
+		".": {
+			"envm-dev": {
+				"types": "./types/src/index.d.mts",
+				"import": "./src/index.mjs",
+				"require": "./src/index.cjs"
+			},
+			"types": "./types/src/index.d.mts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
+		},
+		"./cli": {
+			"envm-dev": {
+				"types": "./types/src/cli.d.mts",
+				"import": "./src/cli.mjs"
+			},
+			"types": "./types/src/cli.d.mts",
+			"import": "./dist/cli.mjs"
+		},
+		"./package.json": "./package.json"
 	},
 	"bin": {
-		"envm": "dist/cli.mjs"
+		"envm": "./dist/cli.mjs"
 	},
 	"scripts": {
-		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-		"build": "npm run clean && esbuild src/*.mjs src/platform/*.mjs --minify --platform=node --format=esm --outdir=dist --out-extension:.js=.mjs --outbase=src",
-		"build:ci": "npm run build",
-		"test": "node tests/run-vitest.mjs",
+		"build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsup",
+		"build:ci": "npm run lint && npm run format:check && npm run types:build && npm run build",
+		"prepack": "npm run build",
+		"test": "node tests/run-vitest.mjs && npm run test:dist",
+		"test:dist": "npm run build && node --conditions=envm-dev --test tests/cjs/entry.test.cjs",
 		"test:watch": "vitest --config .configs/vitest.config.mjs",
 		"coverage": "node tests/run-vitest.mjs --coverage-quiet",
-		"ci:coverage": "npm run coverage",
-		"prepublishOnly": "npm run build",
+		"ci:coverage": "npm run coverage && npm run test:dist",
+		"types:build": "tsc -p .configs/tsconfig.json",
+		"lint": "eslint --config .configs/eslint.config.mjs .",
+		"lint:fix": "eslint --config .configs/eslint.config.mjs . --fix",
+		"format": "prettier --config .configs/.prettierrc --write .",
+		"format:check": "prettier --config .configs/.prettierrc --check .",
 		"fix:headers": "fix-headers --config .configs/fix-headers.json"
 	},
 	"repository": {
@@ -35,8 +59,8 @@
 	},
 	"files": [
 		"dist/",
-		"README.md",
-		"LICENSE"
+		"!dist/**/*.map",
+		"types/"
 	],
 	"keywords": [
 		"env",
@@ -48,12 +72,27 @@
 	],
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
+	"engines": {
+		"node": ">=22.22.0"
+	},
 	"devDependencies": {
 		"@cldmv/configs": "^1.2.4",
+		"@cldmv/eslint-plugin-jsonv": "^1.0.17",
 		"@cldmv/fix-headers": "^2.2.0",
+		"@cldmv/jsonv": "^1.1.5",
+		"@cldmv/prettier-plugin-jsonv": "^1.1.4",
 		"@cldmv/vitest-runner": "^1.2.0",
+		"@eslint/css": "^2.0.1",
+		"@eslint/js": "^10.0.1",
+		"@eslint/json": "^2.1.1",
+		"@eslint/markdown": "^8.0.3",
+		"@types/node": "^26.6.6",
 		"@vitest/coverage-v8": "^5.0.0",
-		"esbuild": "^0.28.1",
+		"eslint": "^10.14.0",
+		"globals": "^17.14.0",
+		"prettier": "^3.9.10",
+		"tsup": "^9.0.0",
+		"typescript": "^7.0.2",
 		"vitest": "^5.0.0"
 	}
 }
