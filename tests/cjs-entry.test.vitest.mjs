@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
+ *	@Last modified time: 2026-11-01T13:15:33-08:00 (1793567733)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -50,7 +50,7 @@ describe("src/index.cjs", () => {
 			expect(() => require(entry)).toThrow(
 				expect.objectContaining({
 					code: "ERR_REQUIRE_ESM",
-					message: expect.stringMatching(/require\(\) needs Node\.js \^20\.19\.0 or >=22\.13\.0 .*import\(\)/)
+					message: expect.stringMatching(/require\(\) needs Node\.js >=22\.22\.0 .*import\(\)/)
 				})
 			);
 		} finally {

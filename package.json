@@ -73,7 +73,7 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"engines": {
-		"node": "^20.19.0 || >=22.13.0"
+		"node": ">=22.22.0"
 	},
 	"devDependencies": {
 		"@cldmv/configs": "^1.2.4",
