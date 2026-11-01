@@ -30,6 +30,8 @@ function printResult(res) {
 }
 
 import { readFile } from "node:fs/promises";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 async function main(argv = process.argv.slice(2)) {
 	const args = Object.fromEntries(
@@ -91,7 +93,21 @@ async function main(argv = process.argv.slice(2)) {
 	}
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+/**
+ * True when this file is the process entry point. npm runs the bin through a symlink in node_modules/.bin,
+ * so the real path of argv[1] is compared with this module's own path, not the raw URL string.
+ * @returns {boolean}
+ */
+function isMain() {
+	if (!process.argv[1]) return false;
+	try {
+		return fileURLToPath(import.meta.url) === realpathSync(process.argv[1]);
+	} catch {
+		return false;
+	}
+}
+
+if (isMain()) {
 	// Always purge backups on process exit
 	// Through envManager, so the CLI bundle uses the library's backup state instead of its own copy.
 	const doPurge = () => envManager.backup.purge().catch(() => {});

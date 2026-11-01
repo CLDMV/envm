@@ -26,6 +26,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
@@ -96,4 +97,19 @@ test("the bundled CLI runs and loads dist/index.mjs instead of a second copy", (
 	const usage = run();
 	assert.equal(usage.status, 0, usage.stderr);
 	assert.match(usage.stdout, /Usage: envm/);
+});
+
+test("the CLI runs when started through a symlink, as npm's node_modules/.bin does", () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "envm bin-"));
+	try {
+		const link = path.join(dir, "envm");
+		fs.symlinkSync(path.join(dist, "cli.mjs"), link);
+		const run = spawnSync(process.execPath, [link, "version"], { encoding: "utf8" });
+		assert.equal(run.status, 0, run.stderr);
+		assert.equal(run.stdout.trim(), require(path.join(root, "package.json")).version);
+		const usage = spawnSync(process.execPath, [link], { encoding: "utf8" });
+		assert.match(usage.stdout, /Usage: envm/);
+	} finally {
+		fs.rmSync(dir, { recursive: true, force: true });
+	}
 });
