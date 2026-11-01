@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -54,7 +54,7 @@ async function getRaw(name, { scope }) {
  * @param {{scope: string, expandAcrossScopes?: boolean}} opts
  * @returns {Promise<string|undefined>}
  */
-async function getExpanded(name, { scope, expandAcrossScopes }) {
+async function getExpanded(name, { scope }) {
 	let raw = await getRaw(name, { scope });
 	if (!raw) return raw;
 	// Expand $VAR and ${VAR} recursively
@@ -76,8 +76,8 @@ async function getExpanded(name, { scope, expandAcrossScopes }) {
  * @returns {Promise<Result>}
  */
 async function set(name, value, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
-	let file, oldContent, newContent, backupPath, verification, rollback;
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
+	let file, oldContent, newContent, verification, rollback;
 	if (scope === "session") {
 		const previous = process.env[name];
 		process.env[name] = value;
@@ -90,7 +90,7 @@ async function set(name, value, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let block = oldContent.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
 		let lines = block ? block[1].split(/\n/) : [];
 		let found = false;
@@ -121,7 +121,7 @@ async function set(name, value, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let lines = oldContent.split(/\n/);
 		let found = false;
 		lines = lines.map((l) => {
@@ -150,8 +150,8 @@ async function set(name, value, opts = {}) {
  * @returns {Promise<Result>}
  */
 async function unset(name, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
-	let file, oldContent, newContent, backupPath, verification, rollback;
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
+	let file, oldContent, newContent, verification, rollback;
 	if (scope === "session") {
 		const previous = process.env[name];
 		delete process.env[name];
@@ -164,10 +164,14 @@ async function unset(name, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let block = oldContent.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
 		let lines = block ? block[1].split(/\n/) : [];
-		lines = lines.filter((l) => !l.match(new RegExp(`^export\s+${name}=`)));
+		// Compare the parsed name instead of building a RegExp from it, so metacharacters in the name stay literal.
+		lines = lines.filter((l) => {
+			const m = l.match(/^export\s+([^=\s]+)=/);
+			return !(m && m[1] === name);
+		});
 		const newBlock = `# envm-begin\n${lines.filter(Boolean).join("\n")}\n# envm-end`;
 		newContent = oldContent.replace(/# envm-begin[\s\S]*?# envm-end/m, newBlock);
 		if (!/# envm-begin/.test(newContent)) newContent += `\n${newBlock}\n`;
@@ -186,7 +190,7 @@ async function unset(name, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let lines = oldContent.split(/\n/);
 		lines = lines.filter((l) => !l.startsWith(name + "="));
 		newContent = lines.join("\n");

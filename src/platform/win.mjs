@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -19,12 +19,33 @@
  * @module platform/win
  */
 import { execFile } from "node:child_process";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import * as pathUtils from "../path-utils.mjs";
 import * as backup from "../backup.mjs";
 const execFileAsync = promisify(execFile);
 
 const DELIM = ";";
+
+/**
+ * Import registry export data through reg.exe. The .reg file is written into a fresh private
+ * directory (mkdtemp, exclusive create) that is removed afterwards, never to a predictable
+ * path in the shared temp directory.
+ * @param {string} data - Registry export content.
+ * @returns {Promise<void>}
+ */
+async function importRegData(data) {
+	const dir = await mkdtemp(join(tmpdir(), "envm-"));
+	try {
+		const file = join(dir, "import.reg");
+		await writeFile(file, data, { encoding: "utf8", flag: "wx", mode: 0o600 });
+		await execFileAsync("reg", ["import", file]);
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+}
 const CASE_NORMALIZE = (k) => k.toUpperCase();
 
 /**
@@ -54,7 +75,7 @@ async function getRaw(name, { scope }) {
  * @param {{scope: string, expandAcrossScopes?: boolean}} opts
  * @returns {Promise<string|undefined>}
  */
-async function getExpanded(name, { scope, expandAcrossScopes }) {
+async function getExpanded(name, { scope }) {
 	let raw = await getRaw(name, { scope });
 	if (!raw) return raw;
 	// Expand %VAR% recursively
@@ -76,9 +97,9 @@ async function getExpanded(name, { scope, expandAcrossScopes }) {
  * @returns {Promise<Result>}
  */
 async function set(name, value, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
 	name = CASE_NORMALIZE(name);
-	let previous, verification, rollback, regPath, oldContent, backupPath;
+	let previous, verification, rollback, regPath, backupPath;
 	if (scope === "session") {
 		previous = process.env[name];
 		process.env[name] = value;
@@ -90,7 +111,9 @@ async function set(name, value, opts = {}) {
 		try {
 			const { stdout } = await execFileAsync("reg", ["export", regPath, "-", "/y"]);
 			backupPath = await backup.createBackup(scope, name, stdout);
-		} catch {}
+		} catch {
+			// No backup: the change still goes ahead, but without a rollback.
+		}
 	}
 	// Set value
 	try {
@@ -105,13 +128,12 @@ async function set(name, value, opts = {}) {
 		try {
 			const backupContent = await backup.list({ scope }); // get latest backup
 			if (backupContent && backupContent.length) {
-				// Write backup to temp file
-				const tmp = require("os").tmpdir() + `\\envm-rollback-${Date.now()}.reg`;
-				await require("fs").promises.writeFile(tmp, await require("fs").promises.readFile(backupPath, "utf8"), "utf8");
-				await execFileAsync("reg", ["import", tmp]);
+				await importRegData(await readFile(backupPath, "utf8"));
 			}
 			rollback = true;
-		} catch {}
+		} catch {
+			// Rollback is best effort; the result reports the failed verification.
+		}
 	}
 	previous = undefined;
 	return { ok: verification, scope, name, previous, next: value, verification, rollback, notes: [regPath] };
@@ -124,7 +146,7 @@ async function set(name, value, opts = {}) {
  * @returns {Promise<Result>}
  */
 async function unset(name, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
 	name = CASE_NORMALIZE(name);
 	let previous, verification, rollback, regPath, backupPath;
 	if (scope === "session") {
@@ -138,7 +160,9 @@ async function unset(name, opts = {}) {
 		try {
 			const { stdout } = await execFileAsync("reg", ["export", regPath, "-", "/y"]);
 			backupPath = await backup.createBackup(scope, name, stdout);
-		} catch {}
+		} catch {
+			// No backup: the change still goes ahead, but without a rollback.
+		}
 	}
 	// Delete value
 	try {
@@ -153,12 +177,12 @@ async function unset(name, opts = {}) {
 		try {
 			const backupContent = await backup.list({ scope });
 			if (backupContent && backupContent.length) {
-				const tmp = require("os").tmpdir() + `\\envm-rollback-${Date.now()}.reg`;
-				await require("fs").promises.writeFile(tmp, await require("fs").promises.readFile(backupPath, "utf8"), "utf8");
-				await execFileAsync("reg", ["import", tmp]);
+				await importRegData(await readFile(backupPath, "utf8"));
 			}
 			rollback = true;
-		} catch {}
+		} catch {
+			// Rollback is best effort; the result reports the failed verification.
+		}
 	}
 	previous = undefined;
 	return { ok: verification, scope, name, previous, next: undefined, verification, rollback, notes: [regPath] };
@@ -255,12 +279,8 @@ async function unique({ name = "PATH", scope, delim = DELIM }) {
  */
 async function restoreFromBackup(data, opts = {}) {
 	if (opts.scope !== "user" && opts.scope !== "system") return false;
-	const os = await import("os");
-	const tmp = os.tmpdir() + `\\envm-restore-${Date.now()}.reg`;
-	const { promises: fs } = await import("node:fs");
-	await fs.writeFile(tmp, data, "utf8");
 	try {
-		await execFileAsync("reg", ["import", tmp]);
+		await importRegData(data);
 		return true;
 	} catch {
 		return false;

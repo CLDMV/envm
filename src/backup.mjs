@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:31-07:00 (1790965831)
+ *	@Last modified time: 2026-11-01T12:11:18-08:00 (1793563878)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -92,7 +92,7 @@ async function restore(id) {
 	let content;
 	try {
 		content = await fs.readFile(file, "utf8");
-	} catch (e) {
+	} catch {
 		return false;
 	}
 	// Determine platform and scope from filename
@@ -183,7 +183,9 @@ async function purge({ maxPerScope = 20, maxAgeDays = 30 } = {}) {
 				try {
 					await fs.unlink(join(dir, file));
 					deleted++;
-				} catch {}
+				} catch {
+					// A file that can't be removed stays for the next purge.
+				}
 			}
 		}
 	}

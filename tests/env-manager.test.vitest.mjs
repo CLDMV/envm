@@ -7,13 +7,13 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { envManager } from "../src/index.mjs";
 import * as win from "../src/platform/win.mjs";
 import * as posix from "../src/platform/posix.mjs";
@@ -101,7 +101,7 @@ describe("envManager API", () => {
 	});
 
 	it("should create, list, restore, and purge backups", async () => {
-		const file = await backup.createBackup("session", "TESTVAR", "foo");
+		await backup.createBackup("session", "TESTVAR", "foo");
 		const listFiles = await backup.list({ scope: "session" });
 		expect(listFiles.some((f) => f.includes("TESTVAR"))).toBe(true);
 		// restore should call platform restoreFromBackup
