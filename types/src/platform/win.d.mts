@@ -1,26 +1,11 @@
 /**
- *
- *	@Project: @cldmv/envm
- *	@Filename: /src/platform/win.mjs
- *	@Date: 2025-08-11T12:29:11-07:00 (1754940551)
- *	@Author: Nate Corcoran <CLDMV>
- *	@Email: <Shinrai@users.noreply.github.com>
- *	-----
- *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
- *	-----
- *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
- *
- */
-declare const DELIM = ";";
-/**
  * Get raw value of an environment variable from the given scope.
  * @param {string} name
  * @param {{scope: 'session'|'user'|'system'}} opts
  * @returns {Promise<string|undefined>}
  */
-declare function getRaw(name: string, { scope }: {
-    scope: 'session' | 'user' | 'system';
+export function getRaw(name: string, { scope }: {
+    scope: "session" | "user" | "system";
 }): Promise<string | undefined>;
 /**
  * Expand environment variable references in a value (e.g., %VAR%).
@@ -28,7 +13,7 @@ declare function getRaw(name: string, { scope }: {
  * @param {{scope: string, expandAcrossScopes?: boolean}} opts
  * @returns {Promise<string|undefined>}
  */
-declare function getExpanded(name: string, { scope }: {
+export function getExpanded(name: string, { scope }: {
     scope: string;
     expandAcrossScopes?: boolean;
 }): Promise<string | undefined>;
@@ -39,7 +24,7 @@ declare function getExpanded(name: string, { scope }: {
  * @param {{scope: string, backup?: boolean, verify?: boolean, rollbackOnFail?: boolean}} opts
  * @returns {Promise<Result>}
  */
-declare function set(name: string, value: string, opts?: {
+export function set(name: string, value: string, opts?: {
     scope: string;
     backup?: boolean;
     verify?: boolean;
@@ -51,7 +36,7 @@ declare function set(name: string, value: string, opts?: {
  * @param {{scope: string, backup?: boolean, verify?: boolean, rollbackOnFail?: boolean}} opts
  * @returns {Promise<Result>}
  */
-declare function unset(name: string, opts?: {
+export function unset(name: string, opts?: {
     scope: string;
     backup?: boolean;
     verify?: boolean;
@@ -62,7 +47,7 @@ declare function unset(name: string, opts?: {
  * @param {{name?: string, scope: string, raw?: boolean}} opts
  * @returns {Promise<string>}
  */
-declare function get({ name, scope, raw }: {
+export function get({ name, scope, raw }: {
     name?: string;
     scope: string;
     raw?: boolean;
@@ -74,7 +59,7 @@ declare function get({ name, scope, raw }: {
  * @example
  * await prepend({ name: "PATH", scope: "user", values: ["C:/bin"] });
  */
-declare function prepend({ name, scope, values, unique, validate, delim }: {
+export function prepend({ name, scope, values, unique, validate, delim }: {
     name?: string;
     scope: string;
     values: string[];
@@ -89,7 +74,7 @@ declare function prepend({ name, scope, values, unique, validate, delim }: {
  * @example
  * await append({ name: "PATH", scope: "user", values: ["C:/bin"] });
  */
-declare function append({ name, scope, values, unique, validate, delim }: {
+export function append({ name, scope, values, unique, validate, delim }: {
     name?: string;
     scope: string;
     values: string[];
@@ -104,7 +89,7 @@ declare function append({ name, scope, values, unique, validate, delim }: {
  * @example
  * await remove({ name: "PATH", scope: "user", values: ["C:/bin"] });
  */
-declare function remove({ name, scope, values, delim }: {
+export function remove({ name, scope, values, delim }: {
     name?: string;
     scope: string;
     values: string[];
@@ -117,7 +102,7 @@ declare function remove({ name, scope, values, delim }: {
  * @example
  * await sort({ name: "PATH", scope: "user" });
  */
-declare function sort({ name, scope, delim }: {
+export function sort({ name, scope, delim }: {
     name?: string;
     scope: string;
     delim?: string;
@@ -129,21 +114,21 @@ declare function sort({ name, scope, delim }: {
  * @example
  * await unique({ name: "PATH", scope: "user" });
  */
-declare function unique({ name, scope, delim }: {
+export function unique({ name, scope, delim }: {
     name?: string;
     scope: string;
     delim?: string;
 }): Promise<Result>;
+export const DELIM: ";";
 /**
  * Restore environment from registry backup data.
  * @param {string} data - Registry export content
  * @param {{scope: string, name: string, id: string, file: string}} opts
  * @returns {Promise<boolean>}
  */
-declare function restoreFromBackup(data: string, opts?: {
+export function restoreFromBackup(data: string, opts?: {
     scope: string;
     name: string;
     id: string;
     file: string;
 }): Promise<boolean>;
-export { getRaw, getExpanded, set, unset, get, prepend, append, remove, sort, unique, DELIM, restoreFromBackup };

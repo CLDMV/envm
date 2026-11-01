@@ -25,7 +25,7 @@
  * @example
  * split("a:b:c"); // ["a", "b", "c"]
  */
-declare function split(value: string, delim?: string): string[];
+export function split(value: string, delim?: string): string[];
 /**
  * Join segments into a delimited string, omitting falsy values.
  * @param {string[]} segments - Array of segments to join.
@@ -34,7 +34,7 @@ declare function split(value: string, delim?: string): string[];
  * @example
  * join(["a", "b", "c"]); // "a:b:c"
  */
-declare function join(segments: string[], delim?: string): string;
+export function join(segments: string[], delim?: string): string;
 /**
  * Remove duplicate segments from an array.
  * @param {string[]} segments - Array of segments.
@@ -43,7 +43,7 @@ declare function join(segments: string[], delim?: string): string;
  * @example
  * unique(["A", "b", "a"], true); // ["A", "b"]
  */
-declare function unique(segments: string[], caseInsensitive?: boolean): string[];
+export function unique(segments: string[], caseInsensitive?: boolean): string[];
 /**
  * Validate segments: no blanks, nulls, or quotes.
  * @param {string[]} segments - Array of segments to validate.
@@ -51,7 +51,7 @@ declare function unique(segments: string[], caseInsensitive?: boolean): string[]
  * @example
  * validate(["/bin", "/usr/bin"]); // true
  */
-declare function validate(segments: string[]): boolean;
+export function validate(segments: string[]): boolean;
 /**
  * Normalize case of all segments to uppercase (for Windows compatibility).
  * @param {string[]} segments - Array of segments.
@@ -59,5 +59,4 @@ declare function validate(segments: string[]): boolean;
  * @example
  * normalizeCase(["foo", "Bar"]); // ["FOO", "BAR"]
  */
-declare function normalizeCase(segments: string[]): string[];
-export { split, join, unique, validate, normalizeCase };
+export function normalizeCase(segments: string[]): string[];

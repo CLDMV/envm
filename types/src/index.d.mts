@@ -1,27 +1,3 @@
-/**
- *
- *	@Project: @cldmv/envm
- *	@Filename: /src/index.mjs
- *	@Date: 2025-08-11T12:29:11-07:00 (1754940551)
- *	@Author: Nate Corcoran <CLDMV>
- *	@Email: <Shinrai@users.noreply.github.com>
- *	-----
- *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:31-07:00 (1790965831)
- *	-----
- *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
- *
- */
-/**
- * Cross-platform environment variable manager for Node.js (ESM).
- * Root export: envManager object.
- * Platform detection, API dispatch, and method composition.
- * @module envManager
- */
-import * as win from "./platform/win.mjs";
-import * as posix from "./platform/posix.mjs";
-import * as pathUtils from "./path-utils.mjs";
-import * as backup from "./backup.mjs";
 export type Result = {
     ok: boolean;
     scope: string;
@@ -32,64 +8,34 @@ export type Result = {
     rollback: any;
     notes: string[];
 };
-/**
- * @typedef {Object} Result
- * @property {boolean} ok
- * @property {string} scope
- * @property {string} name
- * @property {string|undefined} previous
- * @property {string|undefined} next
- * @property {any} verification
- * @property {any} rollback
- * @property {string[]} notes
- */
-/**
- * The main environment manager API object.
- * Provides cross-platform environment variable manipulation, backup, and PATH helpers.
- * @namespace envManager
- * @property {string} platform - Platform type: 'win' or 'posix'.
- * @property {string} delim - Default delimiter for PATH-like variables.
- * @property {function(string, {scope: string}): Promise<string|undefined>} getRaw - Get raw value of an environment variable.
- * @property {function(string, {scope: string, expandAcrossScopes?: boolean}): Promise<string|undefined>} getExpanded - Get expanded value of an environment variable.
- * @property {function(string, string, object): Promise<Result>} set - Set an environment variable.
- * @property {function(string, object): Promise<Result>} unset - Unset an environment variable.
- * @property {object} path - PATH-like variable helpers.
- * @property {function({name?: string, scope: string, raw?: boolean}): Promise<string>} path.get - Get PATH-like variable.
- * @property {function({name?: string, scope: string, values: string[], unique?: boolean, validate?: boolean, delim?: string}): Promise<Result>} path.prepend - Prepend values to PATH-like variable.
- * @property {function({name?: string, scope: string, values: string[], unique?: boolean, validate?: boolean, delim?: string}): Promise<Result>} path.append - Append values to PATH-like variable.
- * @property {function({name?: string, scope: string, values: string[], delim?: string}): Promise<Result>} path.remove - Remove values from PATH-like variable.
- * @property {function({name?: string, scope: string, delim?: string}): Promise<Result>} path.sort - Sort PATH-like variable segments.
- * @property {function({name?: string, scope: string, delim?: string}): Promise<Result>} path.unique - Remove duplicates from PATH-like variable.
- * @property {object} backup - Backup helpers.
- * @property {function({scope: string}): Promise<string[]>} backup.list - List available backups.
- * @property {function(string): Promise<boolean>} backup.restore - Restore a backup by id.
- * @property {function(string): void} backup.setBackupDir - Set the backup directory.
- * @property {function(): string} backup.getBackupDir - Get the current backup directory.
- * @property {function({maxPerScope?: number, maxAgeDays?: number}): Promise<number>} backup.purge - Purge old backups.
- */
-declare const envManager: {
-    platform: string;
-    delim: string;
-    getRaw: typeof win.getRaw | typeof posix.getRaw;
-    getExpanded: typeof win.getExpanded | typeof posix.getExpanded;
-    set: typeof win.set | typeof posix.set;
-    unset: typeof win.unset | typeof posix.unset;
-    path: {
-        get(opts: any): Promise<string>;
-        prepend(opts: any): Promise<Result>;
-        append(opts: any): Promise<Result>;
-        remove(opts: any): Promise<Result>;
-        sort(opts: any): Promise<Result>;
-        unique(opts: any): Promise<Result>;
-    };
-    backup: {
-        list: typeof backup.list;
-        restore: typeof backup.restore;
-        setBackupDir: typeof backup.setBackupDir;
-        getBackupDir: typeof backup.getBackupDir;
-        purge: typeof backup.purge;
-    };
-    _adapter: typeof win | typeof posix;
-    _pathUtils: typeof pathUtils;
-};
-export { envManager };
+export namespace envManager {
+    export let platform: string;
+    export let delim: string;
+    export let getRaw: typeof win.getRaw | typeof posix.getRaw;
+    export let getExpanded: typeof win.getExpanded | typeof posix.getExpanded;
+    export let set: typeof win.set | typeof posix.set;
+    export let unset: typeof win.unset | typeof posix.unset;
+    export namespace path {
+        function get(opts: any): Promise<string>;
+        function prepend(opts: any): Promise<Result>;
+        function append(opts: any): Promise<Result>;
+        function remove(opts: any): Promise<Result>;
+        function sort(opts: any): Promise<Result>;
+        function unique(opts: any): Promise<Result>;
+    }
+    export namespace backup {
+        let list: typeof backup.list;
+        let restore: typeof backup.restore;
+        let setBackupDir: typeof backup.setBackupDir;
+        let getBackupDir: typeof backup.getBackupDir;
+        let purge: typeof backup.purge;
+    }
+    export { adapter as _adapter };
+    export { pathUtils as _pathUtils };
+}
+import * as win from "./platform/win.mjs";
+import * as posix from "./platform/posix.mjs";
+import * as backup_1 from "./backup.mjs";
+declare const adapter: typeof win | typeof posix;
+import * as pathUtils from "./path-utils.mjs";
+export {};
