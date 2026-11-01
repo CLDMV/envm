@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
+ *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -167,7 +167,11 @@ async function unset(name, opts = {}) {
 		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let block = oldContent.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
 		let lines = block ? block[1].split(/\n/) : [];
-		lines = lines.filter((l) => !l.match(new RegExp(`^export\\s+${name}=`)));
+		// Compare the parsed name instead of building a RegExp from it, so metacharacters in the name stay literal.
+		lines = lines.filter((l) => {
+			const m = l.match(/^export\s+([^=\s]+)=/);
+			return !(m && m[1] === name);
+		});
 		const newBlock = `# envm-begin\n${lines.filter(Boolean).join("\n")}\n# envm-end`;
 		newContent = oldContent.replace(/# envm-begin[\s\S]*?# envm-end/m, newBlock);
 		if (!/# envm-begin/.test(newContent)) newContent += `\n${newBlock}\n`;

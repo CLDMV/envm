@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
+ *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -19,7 +19,7 @@
  * @module platform/win
  */
 import { execFile } from "node:child_process";
-import { readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -28,6 +28,24 @@ import * as backup from "../backup.mjs";
 const execFileAsync = promisify(execFile);
 
 const DELIM = ";";
+
+/**
+ * Import registry export data through reg.exe. The .reg file is written into a fresh private
+ * directory (mkdtemp, exclusive create) that is removed afterwards, never to a predictable
+ * path in the shared temp directory.
+ * @param {string} data - Registry export content.
+ * @returns {Promise<void>}
+ */
+async function importRegData(data) {
+	const dir = await mkdtemp(join(tmpdir(), "envm-"));
+	try {
+		const file = join(dir, "import.reg");
+		await writeFile(file, data, { encoding: "utf8", flag: "wx", mode: 0o600 });
+		await execFileAsync("reg", ["import", file]);
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+}
 const CASE_NORMALIZE = (k) => k.toUpperCase();
 
 /**
@@ -110,14 +128,7 @@ async function set(name, value, opts = {}) {
 		try {
 			const backupContent = await backup.list({ scope }); // get latest backup
 			if (backupContent && backupContent.length) {
-				// Write backup to temp file
-				const tmp = join(tmpdir(), `envm-rollback-${Date.now()}.reg`);
-				await writeFile(tmp, await readFile(backupPath, "utf8"), "utf8");
-				try {
-					await execFileAsync("reg", ["import", tmp]);
-				} finally {
-					await rm(tmp, { force: true });
-				}
+				await importRegData(await readFile(backupPath, "utf8"));
 			}
 			rollback = true;
 		} catch {
@@ -166,13 +177,7 @@ async function unset(name, opts = {}) {
 		try {
 			const backupContent = await backup.list({ scope });
 			if (backupContent && backupContent.length) {
-				const tmp = join(tmpdir(), `envm-rollback-${Date.now()}.reg`);
-				await writeFile(tmp, await readFile(backupPath, "utf8"), "utf8");
-				try {
-					await execFileAsync("reg", ["import", tmp]);
-				} finally {
-					await rm(tmp, { force: true });
-				}
+				await importRegData(await readFile(backupPath, "utf8"));
 			}
 			rollback = true;
 		} catch {
@@ -274,12 +279,8 @@ async function unique({ name = "PATH", scope, delim = DELIM }) {
  */
 async function restoreFromBackup(data, opts = {}) {
 	if (opts.scope !== "user" && opts.scope !== "system") return false;
-	const os = await import("os");
-	const tmp = os.tmpdir() + `\\envm-restore-${Date.now()}.reg`;
-	const { promises: fs } = await import("node:fs");
-	await fs.writeFile(tmp, data, "utf8");
 	try {
-		await execFileAsync("reg", ["import", tmp]);
+		await importRegData(data);
 		return true;
 	} catch {
 		return false;
