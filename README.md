@@ -29,18 +29,20 @@
 
 - **Cross-platform:** Works on Windows (registry) and POSIX (dotfiles, /etc/environment)
 - **No classes:** API is plain objects and functions
-- **Full ESM:** Modern, standards-based module
+- **ESM and CommonJS:** an ESM build, plus a `require()` entry that loads the same build (no second copy)
 - **PATH-like helpers:** Manipulate PATH and similar variables safely
 - **Backup/restore:** Automatic, timestamped backups with purge and rollback
 - **CLI:** Powerful `envm` command for scripting and automation
-- **TypeScript-friendly:** JSDoc-annotated API
-- **Lightweight:** Only ~29 KB minified (core + CLI)
+- **TypeScript-friendly:** JSDoc-annotated API with generated type declarations
+- **Lightweight:** about 15 KB minified (core + CLI)
 
 ## Installation
 
 ```sh
 npm install @cldmv/envm
 ```
+
+Requires Node.js `^20.19.0 || >=22.13.0`.
 
 ## Usage
 
@@ -70,6 +72,16 @@ await envManager.backup.list({ scope: "user" });
 await envManager.backup.restore("user-PATH-2025-08-11T12-00-00-000Z.bak");
 await envManager.backup.purge({ maxPerScope: 10, maxAgeDays: 7 });
 ```
+
+### CommonJS
+
+`require()` returns the same `envManager` as `import`:
+
+```js
+const { envManager } = require("@cldmv/envm");
+```
+
+The CommonJS entry loads the ESM build through Node's `require(esm)`. On a Node.js version without it, `require()` throws `ERR_REQUIRE_ESM` with the supported range; use `import()` there instead.
 
 ### CLI
 
@@ -124,6 +136,18 @@ See JSDoc in source for full details. Key methods:
 - All changes to user/system env are backed up (unless `--backup false`)
 - Rollback is attempted on failure if backup is enabled
 - Backups are timestamped and auto-purged
+
+## Development
+
+The package entry points (`"."` and `"./cli"`) resolve to the built `dist/` files by default. In a checkout, the `envm-dev` export condition switches them to `src/`:
+
+```sh
+npm run build                                     # tsup → dist/index.mjs, dist/index.cjs, dist/cli.mjs
+node --conditions=envm-dev app.mjs                # run against src/
+export NODE_OPTIONS=--conditions=envm-dev         # or set it once per shell
+```
+
+Without the condition and without a build, importing the package fails with `ERR_MODULE_NOT_FOUND` for `dist/`. `npm test` runs the Vitest suite against `src/` (the config passes the condition), then builds and checks the `dist/` entries with `node --test`.
 
 ## License
 

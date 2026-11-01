@@ -6,7 +6,7 @@
 #	@Email: <Shinrai@users.noreply.github.com>
 #	-----
 #	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
-#	@Last modified time: 2026-10-02T11:30:28-07:00 (1790965828)
+#	@Last modified time: 2026-11-01T12:11:15-08:00 (1793563875)
 #	-----
 #	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
 #
@@ -58,10 +58,10 @@ on:
                 required: false
                 default: "lts/*"
             min_node_version:
-                description: "Minimum Node.js version for matrix testing (default: 22.12.0 — the floor vitest 5 actually runs on)"
+                description: "Minimum Node.js version for matrix testing (default: 22.13.0 — the package floor; vitest 5 needs 22.12, and Node 22.12.x warns on require(esm))"
                 type: string
                 required: false
-                default: "22.12.0"
+                default: "22.13.0"
             max_node_major:
                 description: "Max Node.js major version for the test matrix. Leave blank (the default) to inherit the CLDMV/.github reusable workflow's default; set a value only to pin/override for a specific run."
                 type: string
@@ -224,7 +224,7 @@ jobs:
               .gitignore
             debug: ${{ github.event.inputs.debug == 'true' }}
             node_version: ${{ github.event.inputs.node_version || 'lts/*' }}
-            min_node_version: ${{ github.event.inputs.min_node_version || '22.12.0' }}
+            min_node_version: ${{ github.event.inputs.min_node_version || '22.13.0' }}
             max_node_major: ${{ github.event.inputs.max_node_major || '' }} # blank ⇒ inherit the CLDMV/.github reusable default
             # LTS-only matrix (even majors: 20, 22, 24, …) on every event. Odd majors
             # (21, 23, …) are non-LTS interim releases, and the native-binding test
@@ -267,11 +267,14 @@ jobs:
             badges_branch: ${{ github.event.inputs.badges_branch || 'badges' }}
             badge_filename: ${{ github.event.inputs.badge_filename || 'coverage.json' }}
             upload_coverage_artifact: ${{ github.event.inputs.upload_coverage_artifact != 'false' }}
+            # The coverage legs build before measuring; run the real tsup build (plus lint,
+            # format check and declarations) rather than the default `npm run build`.
+            coverage_build_command: "npm run build:ci"
 
             # ── Type check (runs inside the coverage-badge job) ────────────────────
             # Skipped: envm is a plain JavaScript (ESM) library with no TypeScript
-            # sources and ships no type declarations, so there is no meaningful
-            # JS/TS type-check to run.
+            # sources. Its declarations are generated from JSDoc by `types:build`
+            # (part of `build:ci`), so there is no separate JS/TS type-check to run.
             type_check_command: ${{ github.event.inputs.type_check_command || 'npm run test:types' }}
             skip_type_check: true
 

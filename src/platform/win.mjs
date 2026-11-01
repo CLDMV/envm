@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -54,7 +54,7 @@ async function getRaw(name, { scope }) {
  * @param {{scope: string, expandAcrossScopes?: boolean}} opts
  * @returns {Promise<string|undefined>}
  */
-async function getExpanded(name, { scope, expandAcrossScopes }) {
+async function getExpanded(name, { scope }) {
 	let raw = await getRaw(name, { scope });
 	if (!raw) return raw;
 	// Expand %VAR% recursively
@@ -76,9 +76,9 @@ async function getExpanded(name, { scope, expandAcrossScopes }) {
  * @returns {Promise<Result>}
  */
 async function set(name, value, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
 	name = CASE_NORMALIZE(name);
-	let previous, verification, rollback, regPath, oldContent, backupPath;
+	let previous, verification, rollback, regPath, backupPath;
 	if (scope === "session") {
 		previous = process.env[name];
 		process.env[name] = value;
@@ -90,7 +90,9 @@ async function set(name, value, opts = {}) {
 		try {
 			const { stdout } = await execFileAsync("reg", ["export", regPath, "-", "/y"]);
 			backupPath = await backup.createBackup(scope, name, stdout);
-		} catch {}
+		} catch {
+			// No backup: the change still goes ahead, but without a rollback.
+		}
 	}
 	// Set value
 	try {
@@ -111,7 +113,9 @@ async function set(name, value, opts = {}) {
 				await execFileAsync("reg", ["import", tmp]);
 			}
 			rollback = true;
-		} catch {}
+		} catch {
+			// Rollback is best effort; the result reports the failed verification.
+		}
 	}
 	previous = undefined;
 	return { ok: verification, scope, name, previous, next: value, verification, rollback, notes: [regPath] };
@@ -124,7 +128,7 @@ async function set(name, value, opts = {}) {
  * @returns {Promise<Result>}
  */
 async function unset(name, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
 	name = CASE_NORMALIZE(name);
 	let previous, verification, rollback, regPath, backupPath;
 	if (scope === "session") {
@@ -138,7 +142,9 @@ async function unset(name, opts = {}) {
 		try {
 			const { stdout } = await execFileAsync("reg", ["export", regPath, "-", "/y"]);
 			backupPath = await backup.createBackup(scope, name, stdout);
-		} catch {}
+		} catch {
+			// No backup: the change still goes ahead, but without a rollback.
+		}
 	}
 	// Delete value
 	try {
@@ -158,7 +164,9 @@ async function unset(name, opts = {}) {
 				await execFileAsync("reg", ["import", tmp]);
 			}
 			rollback = true;
-		} catch {}
+		} catch {
+			// Rollback is best effort; the result reports the failed verification.
+		}
 	}
 	previous = undefined;
 	return { ok: verification, scope, name, previous, next: undefined, verification, rollback, notes: [regPath] };

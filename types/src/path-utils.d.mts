@@ -1,0 +1,63 @@
+/**
+ *
+ *	@Project: @cldmv/envm
+ *	@Filename: /src/path-utils.mjs
+ *	@Date: 2025-08-11T12:29:11-07:00 (1754940551)
+ *	@Author: Nate Corcoran <CLDMV>
+ *	@Email: <Shinrai@users.noreply.github.com>
+ *	-----
+ *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
+ *	@Last modified time: 2026-10-02T11:30:31-07:00 (1790965831)
+ *	-----
+ *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
+ *
+ */
+/**
+ * PATH-like variable manipulation utilities for envManager.
+ * Handles split, join, dedupe, trim, normalization, validation, etc.
+ * @module path-utils
+ */
+/**
+ * Split a delimited string into trimmed segments.
+ * @param {string} value - The string to split.
+ * @param {string} [delim=":"] - Delimiter to use (default ':').
+ * @returns {string[]} Array of trimmed segments.
+ * @example
+ * split("a:b:c"); // ["a", "b", "c"]
+ */
+declare function split(value: string, delim?: string): string[];
+/**
+ * Join segments into a delimited string, omitting falsy values.
+ * @param {string[]} segments - Array of segments to join.
+ * @param {string} [delim=":"] - Delimiter to use (default ':').
+ * @returns {string} Joined string.
+ * @example
+ * join(["a", "b", "c"]); // "a:b:c"
+ */
+declare function join(segments: string[], delim?: string): string;
+/**
+ * Remove duplicate segments from an array.
+ * @param {string[]} segments - Array of segments.
+ * @param {boolean} [caseInsensitive=false] - If true, deduplication is case-insensitive (recommended for Windows PATH).
+ * @returns {string[]} Array with duplicates removed.
+ * @example
+ * unique(["A", "b", "a"], true); // ["A", "b"]
+ */
+declare function unique(segments: string[], caseInsensitive?: boolean): string[];
+/**
+ * Validate segments: no blanks, nulls, or quotes.
+ * @param {string[]} segments - Array of segments to validate.
+ * @returns {boolean} True if all segments are valid.
+ * @example
+ * validate(["/bin", "/usr/bin"]); // true
+ */
+declare function validate(segments: string[]): boolean;
+/**
+ * Normalize case of all segments to uppercase (for Windows compatibility).
+ * @param {string[]} segments - Array of segments.
+ * @returns {string[]} Array with all segments uppercased.
+ * @example
+ * normalizeCase(["foo", "Bar"]); // ["FOO", "BAR"]
+ */
+declare function normalizeCase(segments: string[]): string[];
+export { split, join, unique, validate, normalizeCase };
