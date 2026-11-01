@@ -19,6 +19,9 @@
  * @module platform/win
  */
 import { execFile } from "node:child_process";
+import { readFile, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import * as pathUtils from "../path-utils.mjs";
 import * as backup from "../backup.mjs";
@@ -108,9 +111,13 @@ async function set(name, value, opts = {}) {
 			const backupContent = await backup.list({ scope }); // get latest backup
 			if (backupContent && backupContent.length) {
 				// Write backup to temp file
-				const tmp = require("os").tmpdir() + `\\envm-rollback-${Date.now()}.reg`;
-				await require("fs").promises.writeFile(tmp, await require("fs").promises.readFile(backupPath, "utf8"), "utf8");
-				await execFileAsync("reg", ["import", tmp]);
+				const tmp = join(tmpdir(), `envm-rollback-${Date.now()}.reg`);
+				await writeFile(tmp, await readFile(backupPath, "utf8"), "utf8");
+				try {
+					await execFileAsync("reg", ["import", tmp]);
+				} finally {
+					await rm(tmp, { force: true });
+				}
 			}
 			rollback = true;
 		} catch {
@@ -159,9 +166,13 @@ async function unset(name, opts = {}) {
 		try {
 			const backupContent = await backup.list({ scope });
 			if (backupContent && backupContent.length) {
-				const tmp = require("os").tmpdir() + `\\envm-rollback-${Date.now()}.reg`;
-				await require("fs").promises.writeFile(tmp, await require("fs").promises.readFile(backupPath, "utf8"), "utf8");
-				await execFileAsync("reg", ["import", tmp]);
+				const tmp = join(tmpdir(), `envm-rollback-${Date.now()}.reg`);
+				await writeFile(tmp, await readFile(backupPath, "utf8"), "utf8");
+				try {
+					await execFileAsync("reg", ["import", tmp]);
+				} finally {
+					await rm(tmp, { force: true });
+				}
 			}
 			rollback = true;
 		} catch {
