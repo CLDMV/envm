@@ -73,7 +73,14 @@
 	"author": "Shinrai <git@cldmv.net> (http://cldmv.net)",
 	"license": "Apache-2.0",
 	"engines": {
-		"node": ">=22.22.0"
+		"node": ">=14.14.0"
+	},
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": ">=22.22.0",
+			"onFail": "error"
+		}
 	},
 	"overrides": {
 		"katex": ">=0.19.1 <1.0.0",
