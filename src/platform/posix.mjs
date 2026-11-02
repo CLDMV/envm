@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T16:38:48-08:00 (1793579928)
+ *	@Last modified time: 2026-11-01T17:55:25-08:00 (1793584525)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -25,6 +25,15 @@ import * as pathUtils from "../path-utils.mjs";
 import * as backup from "../backup.mjs";
 
 const DELIM = ":";
+
+/**
+ * Path of the system-scope environment file. Defaults to /etc/environment; set ENVM_SYSTEM_ENV_FILE to redirect it
+ * (tests use this so they never touch the real file).
+ * @returns {string}
+ */
+function systemFile() {
+	return process.env.ENVM_SYSTEM_ENV_FILE || "/etc/environment";
+}
 
 /**
  * Parse a managed `export NAME='value'` profile line.
@@ -66,9 +75,21 @@ async function getRaw(name, { scope }) {
 		return undefined;
 	}
 	if (scope === "system") {
-		// Read from /etc/environment
-		// ...implementation stub...
-		throw new Error("Not implemented: getRaw system");
+		// Read the value back from the system file, using the NAME='value' lines set() writes
+		let content;
+		try {
+			content = await fs.readFile(systemFile(), "utf8");
+		} catch {
+			return undefined;
+		}
+		for (const line of content.split(/\r?\n/)) {
+			const eq = line.indexOf("=");
+			if (eq < 1 || line.slice(0, eq) !== name) continue;
+			let value = line.slice(eq + 1);
+			if (value.length >= 2 && (value[0] === "'" || value[0] === '"') && value.endsWith(value[0])) value = value.slice(1, -1);
+			return value;
+		}
+		return undefined;
 	}
 }
 
@@ -139,7 +160,7 @@ async function set(name, value, opts = {}) {
 		return { ok: verification, scope, name, previous: undefined, next: value, verification, rollback, notes: [file] };
 	}
 	if (scope === "system") {
-		file = "/etc/environment";
+		file = systemFile();
 		try {
 			oldContent = await fs.readFile(file, "utf8");
 		} catch {
@@ -208,7 +229,7 @@ async function unset(name, opts = {}) {
 		return { ok: verification, scope, name, previous: undefined, next: undefined, verification, rollback, notes: [file] };
 	}
 	if (scope === "system") {
-		file = "/etc/environment";
+		file = systemFile();
 		try {
 			oldContent = await fs.readFile(file, "utf8");
 		} catch {
@@ -323,7 +344,7 @@ async function restoreFromBackup(data, opts = {}) {
 		const { homedir } = await import("os");
 		target = join(homedir(), ".profile");
 	} else if (opts.scope === "system") {
-		target = "/etc/environment";
+		target = systemFile();
 	} else {
 		return false;
 	}
