@@ -7,13 +7,13 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
+ *	@Last modified time: 2026-11-01T16:38:48-08:00 (1793579928)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { envManager } from "../src/index.mjs";
 import * as win from "../src/platform/win.mjs";
 import * as posix from "../src/platform/posix.mjs";
@@ -138,5 +138,61 @@ describe("envManager API", () => {
 		} else {
 			expect(posix.DELIM).toBe(":");
 		}
+	});
+});
+
+describe.skipIf(isWin)("posix user scope round trip", () => {
+	let tmpHome;
+	let prevHome;
+
+	beforeEach(async () => {
+		const fsp = await import("node:fs/promises");
+		const os = await import("node:os");
+		const path = await import("node:path");
+		tmpHome = await fsp.mkdtemp(path.join(os.tmpdir(), "envm-home-"));
+		prevHome = process.env.HOME;
+		process.env.HOME = tmpHome;
+	});
+
+	afterEach(async () => {
+		process.env.HOME = prevHome;
+		const fsp = await import("node:fs/promises");
+		await fsp.rm(tmpHome, { recursive: true, force: true });
+	});
+
+	it("returns undefined when the profile or variable is missing", async () => {
+		expect(await posix.getRaw("ENVM_RT", { scope: "user" })).toBeUndefined();
+		await posix.set("ENVM_OTHER", "x", { scope: "user", backup: false });
+		expect(await posix.getRaw("ENVM_RT", { scope: "user" })).toBeUndefined();
+	});
+
+	it("set -> getRaw -> unset", async () => {
+		const set = await posix.set("ENVM_RT", "hello world", { scope: "user", backup: false });
+		expect(set.ok).toBe(true);
+		expect(await posix.getRaw("ENVM_RT", { scope: "user" })).toBe("hello world");
+		const un = await posix.unset("ENVM_RT", { scope: "user", backup: false });
+		expect(un.ok).toBe(true);
+		expect(await posix.getRaw("ENVM_RT", { scope: "user" })).toBeUndefined();
+	});
+
+	it("matches names exactly and updates in place", async () => {
+		await posix.set("ENVM_A", "1", { scope: "user", backup: false });
+		await posix.set("ENVM_AB", "2", { scope: "user", backup: false });
+		await posix.set("ENVM_A", "3", { scope: "user", backup: false });
+		expect(await posix.getRaw("ENVM_A", { scope: "user" })).toBe("3");
+		expect(await posix.getRaw("ENVM_AB", { scope: "user" })).toBe("2");
+		await posix.unset("ENVM_A", { scope: "user", backup: false });
+		expect(await posix.getRaw("ENVM_A", { scope: "user" })).toBeUndefined();
+		expect(await posix.getRaw("ENVM_AB", { scope: "user" })).toBe("2");
+	});
+
+	it("works through envManager and leaves lines outside the block alone", async () => {
+		const fsp = await import("node:fs/promises");
+		const path = await import("node:path");
+		await fsp.writeFile(path.join(tmpHome, ".profile"), "export OUTSIDE=keep\n", "utf8");
+		await envManager.set("ENVM_RT", "v", { scope: "user", backup: false });
+		expect(await envManager.getRaw("ENVM_RT", { scope: "user" })).toBe("v");
+		await envManager.unset("ENVM_RT", { scope: "user", backup: false });
+		expect(await fsp.readFile(path.join(tmpHome, ".profile"), "utf8")).toContain("export OUTSIDE=keep");
 	});
 });
