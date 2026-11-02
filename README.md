@@ -43,7 +43,9 @@
 npm install @cldmv/envm
 ```
 
-Requires Node.js `>=22.22.0`.
+Requires Node.js 14.14.0 or later for `import`. `require()` needs Node.js ^20.19.0 or >=22.13.0.
+
+Developing this package needs Node.js 22.22.0 or later (`devEngines`).
 
 ## Usage
 
