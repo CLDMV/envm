@@ -10,18 +10,19 @@
 
 ## ✨ What's New
 
-### Latest: v1.0.12 (October 2026)
+### Latest: v1.1.0 (November 2026)
 
-- **Test toolchain refresh** — `@cldmv/vitest-runner` 1.2.0 to 1.5.3, `vitest` and `@vitest/coverage-v8` 5.0.3, all dev-only and lockfile-only; no library or CLI code changed (#42, #43, #44).
-- **Local test runs need Node.js 22.12.0 or later** — the runner's own Node.js floor rises from 20.19 to 22.12, which CI already used.
-- [View full v1.0.12 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.12.md)
+- **CLDMV library layout** — a tsup build, a `require()` entry that loads the same ESM bundle, generated type declarations, and an `envm-dev` export condition for running a checkout from `src/` (#59, #60).
+- **Four silent bugs fixed** — the installed `envm` command now runs through npm's `.bin` link (#61), Windows rollback restores the registry backup (#62), user-scope `unset` on Linux and macOS removes the variable, and variable names are no longer treated as regex patterns.
+- **Node.js 22.22.0 or later is now required** — earlier releases declared no `engines` floor.
+- [View full v1.1.0 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.1.0.md)
 
 ### Recent Releases
 
+- **v1.0.12** (October 2026) — `@cldmv/vitest-runner` 1.5.3, `vitest` and `@vitest/coverage-v8` 5.0.3; dev-only, no library or CLI code changed (#42, #43, #44) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.12.md))
 - **v1.0.11** (October 2026) — `@cldmv/fix-headers` 2.2.0 and `@cldmv/configs` 1.2.4; every header already matched, so nothing was restamped (#34, #40) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md))
 - **v1.0.10** (October 2026) — the CI `✅ Required PR Check` mirror job runs on every path instead of being skipped on in-repo PRs (#32) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.10.md))
 - **v1.0.9** (October 2026) — a skipped PR run no longer satisfies the `✅ Required PR Check` ruleset (#30) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.9.md))
-- **v1.0.8** (October 2026) — uniform file headers from the shared CLDMV config, the verbatim Apache-2.0 license text, a v4.29.2 workflow sync and vitest 5.0.2 (#19, #20, #22, #23, #24, #26, #27, #28) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.8.md))
 
 📚 **For complete version history, see [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/) and the [GitHub Releases](https://github.com/CLDMV/envm/releases).**
 
