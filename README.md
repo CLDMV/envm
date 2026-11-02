@@ -13,8 +13,8 @@
 ### Latest: v1.1.0 (November 2026)
 
 - **CLDMV library layout** — a tsup build, a `require()` entry that loads the same ESM bundle, generated type declarations, and an `envm-dev` export condition for running a checkout from `src/` (#59, #60).
-- **Four silent bugs fixed** — the installed `envm` command now runs through npm's `.bin` link (#61), Windows rollback restores the registry backup (#62), user-scope `unset` on Linux and macOS removes the variable, and variable names are no longer treated as regex patterns.
-- **Node.js 22.22.0 or later is now required** — earlier releases declared no `engines` floor.
+- **Bug fixes** — the installed `envm` command now runs through npm's `.bin` link (#61), Windows rollback restores the registry backup (#62), user scope on Linux and macOS works end to end (reading a variable no longer throws `Not implemented`, so `set` and `unset` resolve, and `unset` removes the variable) (#68, #69), and variable names are no longer treated as regex patterns.
+- **Node.js requirements** — `engines.node` is `>=14.14.0` for `import`, and `require()` needs Node.js `^20.19.0` or `>=22.13.0`; earlier releases declared no `engines` floor. Developing the package needs Node.js 22.22.0 (`devEngines`) (#67).
 - [View full v1.1.0 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.1.0.md)
 
 ### Recent Releases
