@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
+ *	@Last modified time: 2026-11-01T16:38:48-08:00 (1793579928)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -27,6 +27,19 @@ import * as backup from "../backup.mjs";
 const DELIM = ":";
 
 /**
+ * Parse a managed `export NAME='value'` profile line.
+ * @param {string} line
+ * @returns {{name: string, value: string}|null}
+ */
+function parseExport(line) {
+	const m = line.match(/^export\s+([^=\s]+)=(.*)$/);
+	if (!m) return null;
+	let value = m[2];
+	if (value.length >= 2 && value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+	return { name: m[1], value };
+}
+
+/**
  * Get raw value of an environment variable from the given scope.
  * @param {string} name
  * @param {{scope: 'session'|'user'|'system'}} opts
@@ -37,9 +50,20 @@ async function getRaw(name, { scope }) {
 		return process.env[name];
 	}
 	if (scope === "user") {
-		// Read from managed block in ~/.profile or ~/.bashrc
-		// ...implementation stub...
-		throw new Error("Not implemented: getRaw user");
+		// Read the value back from the managed block in ~/.profile
+		let content;
+		try {
+			content = await fs.readFile(join(homedir(), ".profile"), "utf8");
+		} catch {
+			return undefined;
+		}
+		const block = content.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
+		if (!block) return undefined;
+		for (const line of block[1].split(/\n/)) {
+			const parsed = parseExport(line);
+			if (parsed && parsed.name === name) return parsed.value;
+		}
+		return undefined;
 	}
 	if (scope === "system") {
 		// Read from /etc/environment
@@ -95,8 +119,8 @@ async function set(name, value, opts = {}) {
 		let lines = block ? block[1].split(/\n/) : [];
 		let found = false;
 		lines = lines.map((l) => {
-			const m = l.match(/^export\s+(\w+)=(.*)$/);
-			if (m && m[1] === name) {
+			const parsed = parseExport(l);
+			if (parsed && parsed.name === name) {
 				found = true;
 				return `export ${name}='${value}'`;
 			}

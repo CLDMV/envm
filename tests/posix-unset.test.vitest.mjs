@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T14:18:43-08:00 (1793571523)
+ *	@Last modified time: 2026-11-01T16:38:48-08:00 (1793579928)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -17,10 +17,6 @@
  * @fileoverview Unsetting a user-scope variable on POSIX must match the variable name literally.
  * The name used to be pasted into a RegExp, so metacharacters in it ("." for example) matched
  * other variables too.
- *
- * getRaw() for the user scope is still a stub that throws, so unset() rejects at its verify step
- * after it has rewritten ~/.profile. These tests check the rewritten file, which is what the
- * name matching controls.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
@@ -55,7 +51,7 @@ describe("posix unset (user scope)", () => {
 	it("treats regex metacharacters in the name literally (A.B does not remove AxB)", async () => {
 		const profile = join(home, ".profile");
 		writeFileSync(profile, "# envm-begin\nexport AxB='keep'\nexport A.B='drop'\nexport AB='keep2'\n# envm-end\n");
-		await expect(posix.unset("A.B", { scope: "user" })).rejects.toThrow("Not implemented: getRaw user");
+		await posix.unset("A.B", { scope: "user" });
 		const text = readFileSync(profile, "utf8");
 		expect(text).toContain("export AxB='keep'");
 		expect(text).toContain("export AB='keep2'");
@@ -65,7 +61,7 @@ describe("posix unset (user scope)", () => {
 	it("removes only the exact name, not names that share its prefix", async () => {
 		const profile = join(home, ".profile");
 		writeFileSync(profile, "# envm-begin\nexport FOO='1'\nexport FOOBAR='2'\n# envm-end\n");
-		await expect(posix.unset("FOO", { scope: "user" })).rejects.toThrow("Not implemented: getRaw user");
+		await posix.unset("FOO", { scope: "user" });
 		const text = readFileSync(profile, "utf8");
 		expect(text).not.toMatch(/^export FOO=/m);
 		expect(text).toContain("export FOOBAR='2'");
