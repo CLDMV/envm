@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:32-07:00 (1790965832)
+ *	@Last modified time: 2026-11-01T17:55:25-08:00 (1793584525)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -27,6 +27,28 @@ import * as backup from "../backup.mjs";
 const DELIM = ":";
 
 /**
+ * Path of the system-scope environment file. Defaults to /etc/environment; set ENVM_SYSTEM_ENV_FILE to redirect it
+ * (tests use this so they never touch the real file).
+ * @returns {string}
+ */
+function systemFile() {
+	return process.env.ENVM_SYSTEM_ENV_FILE || "/etc/environment";
+}
+
+/**
+ * Parse a managed `export NAME='value'` profile line.
+ * @param {string} line
+ * @returns {{name: string, value: string}|null}
+ */
+function parseExport(line) {
+	const m = line.match(/^export\s+([^=\s]+)=(.*)$/);
+	if (!m) return null;
+	let value = m[2];
+	if (value.length >= 2 && value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+	return { name: m[1], value };
+}
+
+/**
  * Get raw value of an environment variable from the given scope.
  * @param {string} name
  * @param {{scope: 'session'|'user'|'system'}} opts
@@ -37,14 +59,37 @@ async function getRaw(name, { scope }) {
 		return process.env[name];
 	}
 	if (scope === "user") {
-		// Read from managed block in ~/.profile or ~/.bashrc
-		// ...implementation stub...
-		throw new Error("Not implemented: getRaw user");
+		// Read the value back from the managed block in ~/.profile
+		let content;
+		try {
+			content = await fs.readFile(join(homedir(), ".profile"), "utf8");
+		} catch {
+			return undefined;
+		}
+		const block = content.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
+		if (!block) return undefined;
+		for (const line of block[1].split(/\n/)) {
+			const parsed = parseExport(line);
+			if (parsed && parsed.name === name) return parsed.value;
+		}
+		return undefined;
 	}
 	if (scope === "system") {
-		// Read from /etc/environment
-		// ...implementation stub...
-		throw new Error("Not implemented: getRaw system");
+		// Read the value back from the system file, using the NAME='value' lines set() writes
+		let content;
+		try {
+			content = await fs.readFile(systemFile(), "utf8");
+		} catch {
+			return undefined;
+		}
+		for (const line of content.split(/\r?\n/)) {
+			const eq = line.indexOf("=");
+			if (eq < 1 || line.slice(0, eq) !== name) continue;
+			let value = line.slice(eq + 1);
+			if (value.length >= 2 && (value[0] === "'" || value[0] === '"') && value.endsWith(value[0])) value = value.slice(1, -1);
+			return value;
+		}
+		return undefined;
 	}
 }
 
@@ -54,7 +99,7 @@ async function getRaw(name, { scope }) {
  * @param {{scope: string, expandAcrossScopes?: boolean}} opts
  * @returns {Promise<string|undefined>}
  */
-async function getExpanded(name, { scope, expandAcrossScopes }) {
+async function getExpanded(name, { scope }) {
 	let raw = await getRaw(name, { scope });
 	if (!raw) return raw;
 	// Expand $VAR and ${VAR} recursively
@@ -76,8 +121,8 @@ async function getExpanded(name, { scope, expandAcrossScopes }) {
  * @returns {Promise<Result>}
  */
 async function set(name, value, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
-	let file, oldContent, newContent, backupPath, verification, rollback;
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
+	let file, oldContent, newContent, verification, rollback;
 	if (scope === "session") {
 		const previous = process.env[name];
 		process.env[name] = value;
@@ -90,13 +135,13 @@ async function set(name, value, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let block = oldContent.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
 		let lines = block ? block[1].split(/\n/) : [];
 		let found = false;
 		lines = lines.map((l) => {
-			const m = l.match(/^export\s+(\w+)=(.*)$/);
-			if (m && m[1] === name) {
+			const parsed = parseExport(l);
+			if (parsed && parsed.name === name) {
 				found = true;
 				return `export ${name}='${value}'`;
 			}
@@ -115,13 +160,13 @@ async function set(name, value, opts = {}) {
 		return { ok: verification, scope, name, previous: undefined, next: value, verification, rollback, notes: [file] };
 	}
 	if (scope === "system") {
-		file = "/etc/environment";
+		file = systemFile();
 		try {
 			oldContent = await fs.readFile(file, "utf8");
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let lines = oldContent.split(/\n/);
 		let found = false;
 		lines = lines.map((l) => {
@@ -150,8 +195,8 @@ async function set(name, value, opts = {}) {
  * @returns {Promise<Result>}
  */
 async function unset(name, opts = {}) {
-	const { scope, backup: doBackup = true, verify = true, rollbackOnFail = true } = opts || {};
-	let file, oldContent, newContent, backupPath, verification, rollback;
+	const { scope, backup: doBackup = true, rollbackOnFail = true } = opts || {};
+	let file, oldContent, newContent, verification, rollback;
 	if (scope === "session") {
 		const previous = process.env[name];
 		delete process.env[name];
@@ -164,10 +209,14 @@ async function unset(name, opts = {}) {
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let block = oldContent.match(/# envm-begin\n([\s\S]*?)# envm-end/m);
 		let lines = block ? block[1].split(/\n/) : [];
-		lines = lines.filter((l) => !l.match(new RegExp(`^export\s+${name}=`)));
+		// Compare the parsed name instead of building a RegExp from it, so metacharacters in the name stay literal.
+		lines = lines.filter((l) => {
+			const m = l.match(/^export\s+([^=\s]+)=/);
+			return !(m && m[1] === name);
+		});
 		const newBlock = `# envm-begin\n${lines.filter(Boolean).join("\n")}\n# envm-end`;
 		newContent = oldContent.replace(/# envm-begin[\s\S]*?# envm-end/m, newBlock);
 		if (!/# envm-begin/.test(newContent)) newContent += `\n${newBlock}\n`;
@@ -180,13 +229,13 @@ async function unset(name, opts = {}) {
 		return { ok: verification, scope, name, previous: undefined, next: undefined, verification, rollback, notes: [file] };
 	}
 	if (scope === "system") {
-		file = "/etc/environment";
+		file = systemFile();
 		try {
 			oldContent = await fs.readFile(file, "utf8");
 		} catch {
 			oldContent = "";
 		}
-		if (doBackup) backupPath = await backup.createBackup(scope, name, oldContent);
+		if (doBackup) await backup.createBackup(scope, name, oldContent);
 		let lines = oldContent.split(/\n/);
 		lines = lines.filter((l) => !l.startsWith(name + "="));
 		newContent = lines.join("\n");
@@ -295,7 +344,7 @@ async function restoreFromBackup(data, opts = {}) {
 		const { homedir } = await import("os");
 		target = join(homedir(), ".profile");
 	} else if (opts.scope === "system") {
-		target = "/etc/environment";
+		target = systemFile();
 	} else {
 		return false;
 	}

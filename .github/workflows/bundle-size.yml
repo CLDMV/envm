@@ -6,7 +6,7 @@
 #	@Email: <Shinrai@users.noreply.github.com>
 #	-----
 #	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
-#	@Last modified time: 2026-10-02T11:30:28-07:00 (1790965828)
+#	@Last modified time: 2026-11-01T12:11:15-08:00 (1793563875)
 #	-----
 #	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
 #
@@ -39,7 +39,7 @@ jobs:
         uses: CLDMV/.github/.github/workflows/reusable-bundle-size.yml@v4
         with:
             build_command: "npm run build:ci"
-            dist_paths: "dist/**"
+            dist_paths: "dist/**.mjs,dist/**.cjs"
             # warning_pct: 5
             # warning_bytes: 500
             # comment_mode: "update"

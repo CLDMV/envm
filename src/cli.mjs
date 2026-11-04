@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  *
  *	@Project: @cldmv/envm
@@ -7,7 +8,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T11:30:31-07:00 (1790965831)
+ *	@Last modified time: 2026-11-01T12:11:19-08:00 (1793563879)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -19,7 +20,6 @@
  * @module cli
  */
 import { envManager } from "./index.mjs";
-import * as backup from "./backup.mjs";
 
 function printResult(res) {
 	if (typeof res === "string" || typeof res === "undefined") {
@@ -30,6 +30,8 @@ function printResult(res) {
 }
 
 import { readFile } from "node:fs/promises";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 async function main(argv = process.argv.slice(2)) {
 	const args = Object.fromEntries(
@@ -40,7 +42,6 @@ async function main(argv = process.argv.slice(2)) {
 	const value = args.value || argv[2];
 	const scope = args.scope || "session";
 	const raw = !!args.raw;
-	const expanded = !!args.expanded;
 	const backup = args.backup !== "false";
 	const verify = args.verify !== "false";
 	const dryRun = !!args["dry-run"];
@@ -92,9 +93,24 @@ async function main(argv = process.argv.slice(2)) {
 	}
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+/**
+ * True when this file is the process entry point. npm runs the bin through a symlink in node_modules/.bin,
+ * so the real path of argv[1] is compared with this module's own path, not the raw URL string.
+ * @returns {boolean}
+ */
+function isMain() {
+	if (!process.argv[1]) return false;
+	try {
+		return fileURLToPath(import.meta.url) === realpathSync(process.argv[1]);
+	} catch {
+		return false;
+	}
+}
+
+if (isMain()) {
 	// Always purge backups on process exit
-	const doPurge = () => backup.purge().catch(() => {});
+	// Through envManager, so the CLI bundle uses the library's backup state instead of its own copy.
+	const doPurge = () => envManager.backup.purge().catch(() => {});
 	process.on("exit", doPurge);
 	process.on("SIGINT", () => {
 		doPurge().then(() => process.exit(130));

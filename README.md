@@ -10,18 +10,19 @@
 
 ## ✨ What's New
 
-### Latest: v1.0.12 (October 2026)
+### Latest: v1.1.0 (November 2026)
 
-- **Test toolchain refresh** — `@cldmv/vitest-runner` 1.2.0 to 1.5.3, `vitest` and `@vitest/coverage-v8` 5.0.3, all dev-only and lockfile-only; no library or CLI code changed (#42, #43, #44).
-- **Local test runs need Node.js 22.12.0 or later** — the runner's own Node.js floor rises from 20.19 to 22.12, which CI already used.
-- [View full v1.0.12 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.12.md)
+- **CLDMV library layout** — a tsup build, a `require()` entry that loads the same ESM bundle, generated type declarations, and an `envm-dev` export condition for running a checkout from `src/` (#59, #60).
+- **Bug fixes** — the installed `envm` command now runs through npm's `.bin` link (#61), Windows rollback restores the registry backup (#62), user scope on Linux and macOS works end to end (reading a variable no longer throws `Not implemented`, so `set` and `unset` resolve, and `unset` removes the variable) (#68, #69), and variable names are no longer treated as regex patterns.
+- **Node.js requirements** — `engines.node` is `>=14.14.0` for `import`, and `require()` needs Node.js `^20.19.0` or `>=22.13.0`; earlier releases declared no `engines` floor. Developing the package needs Node.js 22.22.0 (`devEngines`) (#67).
+- [View full v1.1.0 Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.1.0.md)
 
 ### Recent Releases
 
+- **v1.0.12** (October 2026) — `@cldmv/vitest-runner` 1.5.3, `vitest` and `@vitest/coverage-v8` 5.0.3; dev-only, no library or CLI code changed (#42, #43, #44) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.12.md))
 - **v1.0.11** (October 2026) — `@cldmv/fix-headers` 2.2.0 and `@cldmv/configs` 1.2.4; every header already matched, so nothing was restamped (#34, #40) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.11.md))
 - **v1.0.10** (October 2026) — the CI `✅ Required PR Check` mirror job runs on every path instead of being skipped on in-repo PRs (#32) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.10.md))
 - **v1.0.9** (October 2026) — a skipped PR run no longer satisfies the `✅ Required PR Check` ruleset (#30) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.9.md))
-- **v1.0.8** (October 2026) — uniform file headers from the shared CLDMV config, the verbatim Apache-2.0 license text, a v4.29.2 workflow sync and vitest 5.0.2 (#19, #20, #22, #23, #24, #26, #27, #28) ([Changelog](https://github.com/CLDMV/envm/blob/master/docs/changelog/v1/v1.0.8.md))
 
 📚 **For complete version history, see [docs/changelog/](https://github.com/CLDMV/envm/tree/master/docs/changelog/) and the [GitHub Releases](https://github.com/CLDMV/envm/releases).**
 
@@ -29,18 +30,22 @@
 
 - **Cross-platform:** Works on Windows (registry) and POSIX (dotfiles, /etc/environment)
 - **No classes:** API is plain objects and functions
-- **Full ESM:** Modern, standards-based module
+- **ESM and CommonJS:** an ESM build, plus a `require()` entry that loads the same build (no second copy)
 - **PATH-like helpers:** Manipulate PATH and similar variables safely
 - **Backup/restore:** Automatic, timestamped backups with purge and rollback
 - **CLI:** Powerful `envm` command for scripting and automation
-- **TypeScript-friendly:** JSDoc-annotated API
-- **Lightweight:** Only ~29 KB minified (core + CLI)
+- **TypeScript-friendly:** JSDoc-annotated API with generated type declarations
+- **Lightweight:** about 15 KB minified (core + CLI)
 
 ## Installation
 
 ```sh
 npm install @cldmv/envm
 ```
+
+Requires Node.js 14.14.0 or later for `import`. `require()` needs Node.js ^20.19.0 or >=22.13.0.
+
+Developing this package needs Node.js 22.22.0 or later (`devEngines`).
 
 ## Usage
 
@@ -70,6 +75,16 @@ await envManager.backup.list({ scope: "user" });
 await envManager.backup.restore("user-PATH-2025-08-11T12-00-00-000Z.bak");
 await envManager.backup.purge({ maxPerScope: 10, maxAgeDays: 7 });
 ```
+
+### CommonJS
+
+`require()` returns the same `envManager` as `import`:
+
+```js
+const { envManager } = require("@cldmv/envm");
+```
+
+The CommonJS entry loads the ESM build through Node's `require(esm)`. On a Node.js version without it, `require()` throws `ERR_REQUIRE_ESM` with the supported range; use `import()` there instead.
 
 ### CLI
 
@@ -124,6 +139,18 @@ See JSDoc in source for full details. Key methods:
 - All changes to user/system env are backed up (unless `--backup false`)
 - Rollback is attempted on failure if backup is enabled
 - Backups are timestamped and auto-purged
+
+## Development
+
+The package entry points (`"."` and `"./cli"`) resolve to the built `dist/` files by default. In a checkout, the `envm-dev` export condition switches them to `src/`:
+
+```sh
+npm run build                                     # tsup → dist/index.mjs, dist/index.cjs, dist/cli.mjs
+node --conditions=envm-dev app.mjs                # run against src/
+export NODE_OPTIONS=--conditions=envm-dev         # or set it once per shell
+```
+
+Without the condition and without a build, importing the package fails with `ERR_MODULE_NOT_FOUND` for `dist/`. `npm test` runs the Vitest suite against `src/` (the config passes the condition), then builds and checks the `dist/` entries with `node --test`.
 
 ## License
 
