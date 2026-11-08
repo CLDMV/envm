@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:11:13-08:00 (1793563873)
+ *	@Last modified time: 2026-11-07T22:13:15-08:00 (1794118395)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -22,27 +22,31 @@ import path from "node:path";
 // matter what cwd vitest is invoked from.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-export default mergeConfig(
-	devCondition({ root }),
-	defineConfig({
-		root,
-		test: {
-			include: ["tests/**/*.test.vitest.mjs"],
-			exclude: ["node_modules"],
-			environment: "node",
-			testTimeout: 30000,
-			// "dot" keeps CI logs to one character per test file instead of a full
-			// "RUN vX.Y.Z" + per-file pass/fail block for every file — vitest's
-			// non-interactive fallback (no TTY to redraw) otherwise reprints that
-			// whole block per file on top of the final aggregate summary. The final
-			// "Test Files X passed" / "Tests Y passed" summary is unaffected.
-			reporters: ["dot"],
-			coverage: {
-				provider: "v8",
-				include: ["src/**"],
-				exclude: ["**/*.json", "tests/**"],
-				reporter: ["text", "html", "json-summary", "json"]
+// `--mode=dist` (npm run test:dist) leaves the -dev condition off, so tests that import "@cldmv/envm" by name run
+// against the build in dist/ instead of src/.
+export default defineConfig(({ mode }) =>
+	mergeConfig(
+		mode === "dist" ? {} : devCondition({ root }),
+		defineConfig({
+			root,
+			test: {
+				include: ["tests/**/*.test.vitest.mjs"],
+				exclude: ["node_modules"],
+				environment: "node",
+				testTimeout: 30000,
+				// "dot" keeps CI logs to one character per test file instead of a full
+				// "RUN vX.Y.Z" + per-file pass/fail block for every file — vitest's
+				// non-interactive fallback (no TTY to redraw) otherwise reprints that
+				// whole block per file on top of the final aggregate summary. The final
+				// "Test Files X passed" / "Tests Y passed" summary is unaffected.
+				reporters: ["dot"],
+				coverage: {
+					provider: "v8",
+					include: ["src/**"],
+					exclude: ["**/*.json", "tests/**"],
+					reporter: ["text", "html", "json-summary", "json"]
+				}
 			}
-		}
-	})
+		})
+	)
 );

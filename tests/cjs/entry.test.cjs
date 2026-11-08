@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T16:26:28-08:00 (1793579188)
+ *	@Last modified time: 2026-11-07T20:56:18-08:00 (1794113778)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -17,7 +17,7 @@
  * @fileoverview Checks the built dist/ output: the CJS entry re-exports the ESM bundle,
  * the guard fails clearly where require(esm) is off, the envm-dev condition routes the
  * package to src/, and the bundled CLI runs. These run under Node's own test runner
- * (`node --conditions=envm-dev --test`, see `test:dist`) after `npm run build`, because
+ * (`node --conditions=envm-dev --test`, see `test:cjs`) after `npm run build`, because
  * Vitest loads files through its own module runner and can't show what a plain
  * `require()` does for a CommonJS consumer.
  */
