@@ -1,6 +1,6 @@
 {
 	"name": "@cldmv/envm",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Cross-platform environment variable manager for Node.js (ESM, no classes)",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -34,11 +34,12 @@
 		"build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsup",
 		"build:ci": "npm run lint && npm run format:check && npm run types:build && npm run build",
 		"prepack": "npm run build",
-		"test": "node tests/run-vitest.mjs && npm run test:dist",
-		"test:dist": "npm run build && node --conditions=envm-dev --test tests/cjs/entry.test.cjs",
+		"test": "node tests/run-vitest.mjs && npm run test:cjs && npm run test:dist",
+		"test:cjs": "npm run build && node --conditions=envm-dev --test tests/cjs/entry.test.cjs",
+		"test:dist": "npm run build && node tests/run-vitest.mjs --mode=dist",
 		"test:watch": "vitest --config .configs/vitest.config.mjs",
 		"coverage": "node tests/run-vitest.mjs --coverage-quiet",
-		"ci:coverage": "npm run coverage && npm run test:dist",
+		"ci:coverage": "npm run coverage && npm run test:cjs && npm run test:dist",
 		"types:build": "tsc -p .configs/tsconfig.json",
 		"lint": "eslint --config .configs/eslint.config.mjs .",
 		"lint:fix": "eslint --config .configs/eslint.config.mjs . --fix",
@@ -87,7 +88,7 @@
 		"minimatch": "^11.0.3"
 	},
 	"devDependencies": {
-		"@cldmv/configs": "^1.3.0",
+		"@cldmv/configs": "^1.4.0",
 		"@cldmv/eslint-plugin-jsonv": "^1.0.17",
 		"@cldmv/fix-headers": "^2.2.4",
 		"@cldmv/jsonv": "^1.1.5",

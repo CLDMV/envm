@@ -150,7 +150,7 @@ node --conditions=envm-dev app.mjs                # run against src/
 export NODE_OPTIONS=--conditions=envm-dev         # or set it once per shell
 ```
 
-Without the condition and without a build, importing the package fails with `ERR_MODULE_NOT_FOUND` for `dist/`. `npm test` runs the Vitest suite against `src/` (the config passes the condition), then builds and checks the `dist/` entries with `node --test`.
+Without the condition and without a build, importing the package fails with `ERR_MODULE_NOT_FOUND` for `dist/`. `npm test` runs the Vitest suite against `src/` (the config passes the condition), then builds and checks the `dist/` entries with `node --test`. `npm run test:dist` builds and runs the Vitest suite against `dist/` instead of `src/`.
 
 ## License
 
