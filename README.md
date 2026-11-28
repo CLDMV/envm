@@ -78,10 +78,11 @@ await envManager.backup.purge({ maxPerScope: 10, maxAgeDays: 7 });
 
 ### CommonJS
 
-`require()` returns the same `envManager` as `import`:
+`require()` returns the `envManager` object itself, the same one `import { envManager }` gives you:
 
 ```js
-const { envManager } = require("@cldmv/envm");
+const envManager = require("@cldmv/envm");
+await envManager.set("MY_VAR", "value", { scope: "user" });
 ```
 
 The CommonJS entry loads the ESM build through Node's `require(esm)`. On a Node.js version without it, `require()` throws `ERR_REQUIRE_ESM` with the supported range; use `import()` there instead.
