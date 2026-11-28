@@ -18,8 +18,8 @@
  *
  *  - dist/index.mjs — ESM bundle of src/index.mjs (the `envManager` export). The
  *    platform adapters and backup helpers are bundled in.
- *  - dist/index.cjs — not built: src/index.cjs is a thin wrapper that `require()`s the
- *    sibling index.mjs. `onSuccess` copies it verbatim, so it never duplicates the library.
+ *  - dist/index.cjs — not built: src/index.cjs is the generic CLDMV shim that `require()`s the
+ *    sibling index.mjs and returns its single export. `onSuccess` copies it verbatim, so it never duplicates the library.
  *  - dist/cli.mjs — the `envm` CLI, bundled from src/cli.mjs. Its `./index.mjs` import
  *    stays external, so the CLI loads dist/index.mjs instead of carrying a second copy
  *    (and shares its backup-directory state). esbuild keeps the entry's shebang.

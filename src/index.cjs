@@ -14,20 +14,10 @@
  */
 
 /**
- * CommonJS entry point — a thin, synchronous re-export of the ESM build.
- *
- * Node's `require()` loads an ES module synchronously and returns its namespace,
- * as long as the module graph has no top-level await (envm's has none). This file
- * re-exports that namespace — `{ envManager }` — instead of tsup bundling a
- * second, independent copy of the library for CommonJS.
- *
- * Node.js versions without require(esm) would fail with a bare ERR_REQUIRE_ESM,
- * so the check below fails early with a message that says what to do instead.
- *
- * tsup.config.mjs copies this file verbatim to dist/index.cjs, so it never passes
- * through esbuild. Its `require("./index.mjs")` resolves to the sibling
- * src/index.mjs in a checkout and to the bundle in dist/.
- * @module @cldmv/envm
+ * @fileoverview CommonJS entry point: a thin, synchronous wrapper around the ESM build. The ESM entry
+ * has one export, `envManager`, so `require("@cldmv/envm")` returns the `envManager` object itself.
+ * Node.js versions without require(esm) fail early with a message that says to use `import()` instead.
+ * tsup.config.mjs copies this file verbatim to dist/index.cjs, so it never passes through esbuild.
  */
 "use strict";
 
@@ -39,4 +29,12 @@ if (!process.features?.require_module) {
 	throw error;
 }
 
-module.exports = require("./index.mjs");
+// Same exports as `import`. One distinct exported value (aliases of it count once) comes back as that value,
+// so require(x)(...) works; anything else comes back as the module object ({ default, ...named }).
+const esm = require("./index.mjs");
+const values = new Set(
+	Object.keys(esm)
+		.filter((key) => key !== "__esModule")
+		.map((key) => esm[key])
+);
+module.exports = values.size === 1 ? values.values().next().value : esm;

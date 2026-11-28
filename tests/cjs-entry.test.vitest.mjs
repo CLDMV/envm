@@ -15,7 +15,7 @@
 
 /**
  * @fileoverview Source-level checks of the CommonJS entry: src/index.cjs, loaded through a
- * plain require(), exports the same API as src/index.mjs, and its guard rejects a Node.js
+ * plain require(), returns the `envManager` object from src/index.mjs, and its guard rejects a Node.js
  * without require(esm). The built dist/ entry is checked by tests/cjs/entry.test.cjs.
  */
 import { createRequire } from "node:module";
@@ -26,19 +26,17 @@ const require = createRequire(import.meta.url);
 const entry = require.resolve("../src/index.cjs");
 
 describe("src/index.cjs", () => {
-	it("exports the same names and API shape as src/index.mjs", () => {
+	it("returns the envManager object itself, not the module namespace", () => {
 		const cjs = require(entry);
-		const names = Object.keys(cjs)
-			.filter((key) => key !== "__esModule")
-			.sort();
-		expect(names).toEqual(Object.keys(esm).sort());
-		expect(names).toEqual(["envManager"]);
 		// Native require() and Vitest's module runner load separate instances, so compare the shape.
-		expect(Object.keys(cjs.envManager).sort()).toEqual(Object.keys(esm.envManager).sort());
-		expect(Object.keys(cjs.envManager.path).sort()).toEqual(Object.keys(esm.envManager.path).sort());
-		expect(Object.keys(cjs.envManager.backup).sort()).toEqual(Object.keys(esm.envManager.backup).sort());
-		expect(cjs.envManager.platform).toBe(esm.envManager.platform);
-		expect(cjs.envManager.delim).toBe(esm.envManager.delim);
+		expect(Object.keys(cjs).sort()).toEqual(Object.keys(esm.envManager).sort());
+		expect(Object.keys(cjs.path).sort()).toEqual(Object.keys(esm.envManager.path).sort());
+		expect(Object.keys(cjs.backup).sort()).toEqual(Object.keys(esm.envManager.backup).sort());
+		expect(cjs.platform).toBe(esm.envManager.platform);
+		expect(cjs.delim).toBe(esm.envManager.delim);
+		expect(cjs.envManager).toBeUndefined();
+		expect(typeof cjs.set).toBe("function");
+		expect(typeof cjs.getRaw).toBe("function");
 	});
 
 	it("throws ERR_REQUIRE_ESM with the supported Node.js range when require(esm) is unavailable", () => {
