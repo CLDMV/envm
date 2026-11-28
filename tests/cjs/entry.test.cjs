@@ -7,17 +7,17 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T16:26:28-08:00 (1793579188)
+ *	@Last modified time: 2026-11-07T20:56:18-08:00 (1794113778)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
  */
 
 /**
- * @fileoverview Checks the built dist/ output: the CJS entry re-exports the ESM bundle,
+ * @fileoverview Checks the built dist/ output: the CJS entry returns the ESM bundle's envManager,
  * the guard fails clearly where require(esm) is off, the envm-dev condition routes the
  * package to src/, and the bundled CLI runs. These run under Node's own test runner
- * (`node --conditions=envm-dev --test`, see `test:dist`) after `npm run build`, because
+ * (`node --conditions=envm-dev --test`, see `test:cjs`) after `npm run build`, because
  * Vitest loads files through its own module runner and can't show what a plain
  * `require()` does for a CommonJS consumer.
  */
@@ -34,17 +34,14 @@ const { pathToFileURL } = require("node:url");
 const root = path.resolve(__dirname, "../..");
 const dist = path.join(root, "dist");
 
-test("dist/index.cjs exports the same names and values as dist/index.mjs", async () => {
+test("dist/index.cjs returns the envManager object that dist/index.mjs exports", async () => {
 	const esm = await import(pathToFileURL(path.join(dist, "index.mjs")).href);
 	const cjs = require(path.join(dist, "index.cjs"));
-	// require(esm) can add an `__esModule` marker; it isn't part of the API.
-	const names = Object.keys(cjs)
-		.filter((key) => key !== "__esModule")
-		.sort();
-	assert.deepEqual(names, ["envManager"]);
-	assert.deepEqual(names, Object.keys(esm).sort());
-	assert.equal(cjs.envManager, esm.envManager);
-	assert.equal(typeof cjs.envManager.getRaw, "function");
+	assert.deepEqual(Object.keys(esm), ["envManager"]);
+	assert.equal(cjs, esm.envManager);
+	assert.equal(cjs.envManager, undefined);
+	assert.equal(typeof cjs.set, "function");
+	assert.equal(typeof cjs.getRaw, "function");
 });
 
 test("dist/index.cjs is the verbatim copy of src/index.cjs, not a second bundle", () => {
@@ -69,7 +66,7 @@ test("the envm-dev condition routes require() and import() of the package to src
 	// through that branch of the exports map.
 	assert.equal(require.resolve("@cldmv/envm"), path.join(root, "src", "index.cjs"));
 	const esm = await import("@cldmv/envm");
-	assert.equal(require("@cldmv/envm").envManager, esm.envManager);
+	assert.equal(require("@cldmv/envm"), esm.envManager);
 	assert.equal(esm.envManager, (await import(pathToFileURL(path.join(root, "src", "index.mjs")).href)).envManager);
 	const cli = await import("@cldmv/envm/cli");
 	assert.equal(cli.main, (await import(pathToFileURL(path.join(root, "src", "cli.mjs")).href)).main);

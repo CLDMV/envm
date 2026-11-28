@@ -7,14 +7,14 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T17:55:25-08:00 (1793584525)
+ *	@Last modified time: 2026-11-07T22:13:17-08:00 (1794118397)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { envManager } from "../src/index.mjs";
+import { envManager } from "@cldmv/envm";
 import * as win from "../src/platform/win.mjs";
 import * as posix from "../src/platform/posix.mjs";
 import * as backup from "../src/backup.mjs";
